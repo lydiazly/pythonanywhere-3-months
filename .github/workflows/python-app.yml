@@ -50,6 +50,6 @@ jobs:
         sudo echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         sudo echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         cat "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-        python3 -m pip uninstall selenium
+        python3 -m pip uninstall -y selenium
         python3 -m pip install --user selenium==3.14.0
         pythonanywhere_3_months -Hc $(which chromedriver)
