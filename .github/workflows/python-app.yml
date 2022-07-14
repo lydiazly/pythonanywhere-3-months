@@ -44,5 +44,5 @@ jobs:
     - name: Run Python3month
       run: |
         ls -la
-        python3 -m pip install pythonanywhere-3-months
+        python3 -m pip install ./
         pythonanywhere_3_months -Hc /usr/local/bin/chromedriver
