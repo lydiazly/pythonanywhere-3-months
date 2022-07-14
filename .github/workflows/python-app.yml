@@ -51,4 +51,4 @@ jobs:
         sudo echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         sudo echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         cat "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-        pythonanywhere_3_months -H
+        pythonanywhere_3_months -Hc $(which chromedriver)
