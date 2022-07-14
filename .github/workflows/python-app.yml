@@ -45,8 +45,8 @@ jobs:
       run: |
         ls -la
         python3 -m pip install --user ./
-        sudo mkdir -p ~/.local/share/
-        sudo echo "username: ${{ secrets.USERNAME }}" >> ~/.local/share/pythonanywhere_credentials.yaml
-        sudo echo "password: ${{ secrets.PASSWORD }}" >> ~/.local/share/pythonanywhere_credentials.yaml
+        export XDG_DATA_HOME=./
+        sudo echo "username: ${{ secrets.USERNAME }}" >> ./pythonanywhere_credentials.yaml
+        sudo echo "password: ${{ secrets.PASSWORD }}" >> ./pythonanywhere_credentials.yaml
 
         pythonanywhere_3_months -H
