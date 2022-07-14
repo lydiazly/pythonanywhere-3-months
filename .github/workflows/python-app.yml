@@ -22,8 +22,8 @@ jobs:
       run: |
         sudo apt update
     - uses: actions/checkout@v3
-    #  with:
-    #    ref: '4b488074cabfc1405cb4bbdd6bf1892ba22073ef'
+      with:
+        ref: '4b488074cabfc1405cb4bbdd6bf1892ba22073ef'
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
@@ -50,4 +50,6 @@ jobs:
         sudo echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         sudo echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         cat "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
+        python3 -m pip remove selenium
+        python3 -m pip install --user selenium==3.14.0
         pythonanywhere_3_months -Hc $(which chromedriver)
