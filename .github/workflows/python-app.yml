@@ -45,8 +45,8 @@ jobs:
       run: |
         ls -la
         python3 -m pip install --user ./
-        export XDG_DATA_HOME=./
+        export XDG_DATA_HOME=/home/runner/
         sudo echo "username: ${{ secrets.USERNAME }}" >> ./pythonanywhere_credentials.yaml
         sudo echo "password: ${{ secrets.PASSWORD }}" >> ./pythonanywhere_credentials.yaml
-
+        cat "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         pythonanywhere_3_months -H
