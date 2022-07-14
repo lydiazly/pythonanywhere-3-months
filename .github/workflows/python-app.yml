@@ -20,7 +20,7 @@ jobs:
     steps:
     - name: Update & Upgrade
       run: |
-        sudo apt update && sudo apt upgrade
+        sudo apt update
     - uses: actions/checkout@v3
     - name: Set up Python 3.6
       uses: actions/setup-python@v3
@@ -43,5 +43,6 @@ jobs:
         
     - name: Run Python3month
       run: |
-        python3 -m pip install git+https://github.com/seanbreckenridge/pythonanywhere-3-months
+        ls -la
+        python3 -m pip install pythonanywhere-3-months
         pythonanywhere_3_months -Hc /usr/local/bin/chromedriver
