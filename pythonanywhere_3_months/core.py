@@ -5,15 +5,12 @@ import sys
 import traceback
 import logging
 import argparse
-import shutil
-import warnings
 from time import time
 from pathlib import Path
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Union
 
 import yaml
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 from . import (
@@ -28,14 +25,21 @@ def setup_debug_logging() -> None:
     )
 
 
-def create_webdriver(chromedriver_path: str, hide: bool) -> webdriver.Chrome:
+def create_webdriver(
+    chromedriver_path: Union[str, None], hide: bool
+) -> webdriver.Chrome:
     """Creates a webdriver, hides if requested."""
-    options = Options()
+    options = webdriver.ChromeOptions()
     if hide:
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
+        options.add_argument("headless")
+        options.add_argument("disable-gpu")
+        options.add_argument("window-size=1920x1080")
         logging.debug("Creating hidden chrome browser")
-    return webdriver.Chrome(chromedriver_path, options=options)
+    service: Optional[webdriver.ChromeService] = None
+    if chromedriver_path is not None:
+        service = webdriver.ChromeService(chromedriver_path)
+        logging.debug("Using custom chromedriver path: {}".format(chromedriver_path))
+    return webdriver.Chrome(options=options, service=service)  # type: ignore
 
 
 def get_options() -> Tuple[bool, str]:
@@ -50,19 +54,13 @@ def get_options() -> Tuple[bool, str]:
         "-c",
         "--chromedriver-path",
         help="Provides the location of ChromeDriver. Should probably be the full path.",
-        default=shutil.which("chromedriver"),
+        default=None,
     )
     parser.add_argument("-d", "--debug", help="Prints debug logs", action="store_true")
     args = parser.parse_args()
     if args.debug:
         setup_debug_logging()
-    if args.chromedriver_path is None:
-        warnings.warn(
-            "Couldn't find the location of a chromedriver. Provide one like '-c /path/to/chromedriver'"
-        )
-        sys.exit(1)
-    else:
-        logging.debug("Chromedriver path: {}".format(args.chromedriver_path))
+    logging.debug("Custom chromedriver path: {}".format(args.chromedriver_path))
     return args.hidden, args.chromedriver_path
 
 
@@ -76,7 +74,7 @@ def get_credentials(filepath: str) -> Tuple[str, str]:
 
 
 # global variables so someone can monkey patch
-# if they want to -- incase this breaks
+# if they want to -- in case this breaks
 LOGIN_ID = "id_auth-username"
 PASSWORD_ID = "id_auth-password"
 LOGIN_BUTTON = "id_next"
@@ -105,11 +103,14 @@ def run(
 
         # Click 'Run until 3 months from today'
         driver.find_element(By.CSS_SELECTOR, RUN_BUTTON_SELECTOR).click()
-    except:
+
+        # save current time to 'last run time file', so we can check if we need to run this again
+        with open(last_run_at_absolute_path, "w") as f:
+            f.write(str(time()))
+
+        print("Done!", file=sys.stderr)
+    except Exception:
         traceback.print_exc()
     finally:
         if driver:
             driver.quit()
-        # save current time to 'last run time file', so we can check if we need to run this again
-        with open(last_run_at_absolute_path, "w") as f:
-            f.write(str(time()))

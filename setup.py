@@ -7,8 +7,7 @@ with open("requirements.txt") as requirements_file:
     requirements = list(map(str.strip, requirements_file.read().splitlines()))
 
 setup(
-    author="Sean Breckenridge",
-    author_email="seanbrecke@gmail.com",
+    author="purarue",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: End Users/Desktop",
@@ -32,7 +31,7 @@ setup(
             "pythonanywhere_check_since = pythonanywhere_3_months.last_run:check",
         ]
     },
-    url="https://github.com/seanbreckenridge/pythonanywhere-3-months",
+    url="https://github.com/purarue/pythonanywhere-3-months",
     version="0.1.0",
     zip_safe=True,
 )
