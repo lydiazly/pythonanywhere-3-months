@@ -130,7 +130,9 @@ def get_expiry_date(driver: webdriver.Chrome, url: str) -> tuple[bool, str, WebE
 
 
 def extend_expiry_date(driver: webdriver.Chrome, element: WebElement) -> tuple[bool, list[str]]:
-    """Clicks the 'Run until 3 months from today' button."""
+    """Clicks the 'Run until 3 months from today' button and
+    returns a tuple of status and a list of messages.
+    """
     driver.find_element(By.CSS_SELECTOR, RUN_BUTTON_SELECTOR).click()
     try:
         # The page will reload once the button is clicked
@@ -148,7 +150,7 @@ def extend_expiry_date(driver: webdriver.Chrome, element: WebElement) -> tuple[b
 
 
 def get_options() -> tuple[bool, str, logging.Logger]:
-    """Gets options from user."""
+    """Gets options from user and sets the logger."""
     parser = argparse.ArgumentParser(
         description="Clicks the 'Run until 3 months from today' on PythonAnywhere."
     )
@@ -169,14 +171,16 @@ def get_options() -> tuple[bool, str, logging.Logger]:
 
 
 def get_credentials(filepath: str) -> tuple[str, str]:
-    """Gets pythonanywhere credentials from the dotfile."""
+    """Gets pythonanywhere credentials from the file.
+    If the file does not exist, prompt the user for input and save to this path.
+    """
     absolute_path = os.path.abspath(os.path.join(Path.home(), filepath))
     if os.path.exists(absolute_path):
         logging.debug("Credential file location: {}".format(absolute_path))
         with open(absolute_path, "r") as cred:
             creds = yaml.load(cred, Loader=yaml.FullLoader)
     else:
-        # Prompt the user for input and save the credential to the file
+        # Prompt the user
         from getpass import getpass
         print("Please enter your username and password.")
         username = input("Username: ")
