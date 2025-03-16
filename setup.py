@@ -9,7 +9,7 @@ with open("requirements.txt") as requirements_file:
 setup(
     author="purarue, 1337-server, lydiazly",
     name="pythonanywhere-3-months",
-    description='A modified version of pythonanywhere-3-months (forked from 1337-server/pythonanywhere-3-months, which was forked from purarue/pythonanywhere-3-months).',
+    description="A modified version of pythonanywhere-3-months.",
     python_requires='>=3.10',
     classifiers=[
         "Development Status :: 3 - Alpha",
