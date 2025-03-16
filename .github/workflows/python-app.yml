@@ -4,9 +4,9 @@
 name: Python application
 
 on:
-  # run every day at midnight
+  # 1:15 AM UTC on the 16th of each month
   schedule:
-    - cron: '0 0 1 * *'
+    - cron: '15 1 16 * *'
   push:
     branches: [ "master" ]
   pull_request:
@@ -21,38 +21,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Update & Upgrade
+    - name: Update
       run: |
         sudo apt update
-    - uses: actions/checkout@v3
-      #with:
-      #  ref: '4b488074cabfc1405cb4bbdd6bf1892ba22073ef'
+
+    - uses: actions/checkout@v4
+
     - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5
       with:
         python-version: "3.10"
+
+    - name: Add ~/.local/bin to PATH
+      run: |
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        python3 --version
+        python3 -m pip install --upgrade pip
+        python3 -m pip install --user flake8 pytest
+        if [ -f requirements.txt ]; then python3 -m pip install --user -r requirements.txt; fi
+
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
     - name: Install Chromium-driver
       run: |
-        sudo apt-get install chromium-chromedriver
+        sudo apt -y install chromium-chromedriver
+
     - name: Run Python3month
       run: |
-        ls -la
         python3 -m pip install --user ./
-        export XDG_DATA_HOME=/home/runner
-        sudo echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-        sudo echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-        cat "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-        #python3 -m pip uninstall -y selenium
-        #python3 -m pip install --user selenium==3.14.0
-        pythonanywhere_3_months -Hc $(which chromedriver) >/dev/null 2>&1
+        export XDG_DATA_HOME=$HOME
+        echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
+        echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
+        pythonanywhere_3_months -Hc $(which chromedriver)

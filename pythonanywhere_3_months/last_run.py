@@ -11,7 +11,7 @@ def check():
         # if last time this ran was more than 2 months ago
         if time() - float(f.read().strip()) > 5184000:
             print(
-                "Its been more than 2 months since you've ran 'pythonanywhere_3_months'!"
+                "Its been more than 2 months since you last ran 'pythonanywhere_3_months'!"
             )
             sys.exit(1)
     sys.exit(0)
