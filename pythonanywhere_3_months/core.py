@@ -129,9 +129,9 @@ def get_expiry_date(driver: webdriver.Chrome, url: str) -> tuple[bool, str, WebE
         return True, f"Initial expiry date: {date}", element
 
 
-def extend_expiry_date(driver: webdriver.Chrome, element: WebElement) -> tuple[bool, list[str]]:
+def extend_expiry_date(driver: webdriver.Chrome, element: WebElement) -> tuple[bool, str, str]:
     """Clicks the 'Run until 3 months from today' button and
-    returns a tuple of status and a list of messages.
+    returns a tuple of status, message, and extra information.
     """
     driver.find_element(By.CSS_SELECTOR, RUN_BUTTON_SELECTOR).click()
     try:
@@ -146,7 +146,7 @@ def extend_expiry_date(driver: webdriver.Chrome, element: WebElement) -> tuple[b
         success = True
         msg = "Expiry date extended successfully."
     finally:
-        return success, [msg, f"Current expiry date: {date}"]
+        return success, msg, f"Current expiry date: {date}"
 
 
 def get_options() -> tuple[bool, str, logging.Logger]:
@@ -202,7 +202,7 @@ def run(
     try:
         driver = create_webdriver(chromedriver_path, use_hidden)
 
-        # Login -------------------------------------------------------|
+        # Login ---------------------------------------------------|
         success, msg = log_in(driver, login_page, username, password)
         if success:
             logger.info(msg)
@@ -211,7 +211,7 @@ def run(
             driver.quit()
             return
 
-        # Go to "Web" page --------------------------------------------|
+        # Go to "Web" page ----------------------------------------|
         success, msg, expiry_date_element = get_expiry_date(driver, driver.current_url + "/webapps")
         if success:
             logger.info(msg)
@@ -221,19 +221,19 @@ def run(
             driver.quit()
             return
 
-        # Click 'Run until 3 months from today' -----------------------|
-        success, msg_list = extend_expiry_date(driver, expiry_date_element)
+        # Click 'Run until 3 months from today' -------------------|
+        success, msg, extra_info = extend_expiry_date(driver, expiry_date_element)
         if success:
-            logger.info(msg_list[0])
+            logger.info(msg)
         else:
-            logger.warning(msg_list[0])
-        logger.info(msg_list[1])
+            logger.warning(msg)
+        logger.info(extra_info)
 
         # Save current time to 'last run time file', so we can check if we need to run this again
         with open(last_run_at_absolute_path, "w") as f:
             f.write(str(time()))
 
-        # Log out -----------------------------------------------------|
+        # Log out -------------------------------------------------|
         logger.info(log_out(driver))
 
         print("Done!", file=sys.stderr)
