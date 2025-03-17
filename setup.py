@@ -9,7 +9,7 @@ with open("requirements.txt") as requirements_file:
 setup(
     author="purarue, 1337-server, lydiazly",
     name="pythonanywhere-3-months",
-    description="A modified version of pythonanywhere-3-months.",
+    description="A Playwright version of pythonanywhere-3-months.",
     python_requires='>=3.10',
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -29,6 +29,6 @@ setup(
         ]
     },
     url="https://github.com/lydiazly/pythonanywhere-3-months",
-    version="0.1.0",
+    version="0.2.0",
     zip_safe=True,
 )

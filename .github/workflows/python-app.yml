@@ -50,9 +50,9 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Install Chromium-driver
+    - name: Install browsers
       run: |
-        sudo apt-get -y install chromium-chromedriver
+        playwright install
 
     - name: Run Python3month
       run: |
@@ -60,4 +60,4 @@ jobs:
         export XDG_DATA_HOME=$HOME
         echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-        pythonanywhere_3_months -Hc $(which chromedriver)
+        pythonanywhere_3_months -H

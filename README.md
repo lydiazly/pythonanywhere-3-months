@@ -1,33 +1,35 @@
 # pythonanywhere-3-months
 
-> This is a forked version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) but contains debug option and scheduled workflows. This README is updated.
+> This is a **Playwright** version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) but contains debug option and scheduled workflows. This README is updated.
 
 Logs into your [PythonAnywhere](https://www.pythonanywhere.com/) account and clicks the 'Run until 3 months from today' button, so your website doesn't deactivate automatically.
 
-Requires: Python 3.6+ and a chromedriver binary. See [here](https://gist.github.com/purarue/709a824b8c56ea22dbf4e86a7804287d) for chromedriver.
-
-**Changes made**: Now requires Python 3.10+. Haven't tested in lower versions.
+**Changes made**: Now requires Python 3.10+. Haven't tested in lower versions. No chromedriver needed. Playwright will install browsers at:
+Windows: `%USERPROFILE%\AppData\Local\ms-playwright`
+MacOS: `~/Library/Caches/ms-playwright`
+Linux: `~/. cache/ms-playwright`
 
 ### Install and Run:
 
 ```sh
 python3 -m pip install git+https://github.com/lydiazly/pythonanywhere-3-months
-pythonanywhere_3_months -Hc /usr/local/bin/chromedriver
+# Install the default browsers: Chromium, WebKit, and Firefox
+playwright install
+# Run
+pythonanywhere_3_months -H
 ```
 
 As long as no visible errors are thrown, the script succeeded. You can run it without the `-H` flag to watch it log in and click the relevant links/buttons.
 
 ```sh
-usage: __main__.py [-h] [-H] [-c CHROMEDRIVER_PATH] [-d]
+usage: __main__.py [-h] [-H] [-d]
 
 Clicks the 'Run until 3 months from today' on PythonAnywhere.
 
 options:
-  -h, --help            show this help message and exit
-  -H, --hidden          Hide the ChromeDriver.
-  -c CHROMEDRIVER_PATH, --chromedriver-path CHROMEDRIVER_PATH
-                        Provides the location of ChromeDriver. Should probably be the full path.
-  -d, --debug           Prints debug logs.
+  -h, --help    show this help message and exit
+  -H, --hidden  Hide the browser.
+  -d, --debug   Prints debug logs.
 ```
 
 Put pythonanywhere credentials in your home directory; at `$XDG_DATA_HOME/pythonanywhere_credentials.yaml` (`~/.local/share/pythonanywhere_credentials.yaml`) with contents like:
