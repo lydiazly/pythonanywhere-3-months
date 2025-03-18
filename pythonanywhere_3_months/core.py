@@ -26,7 +26,7 @@ LOGIN_BUTTON_ID = "id_next"
 RUN_BUTTON_SELECTOR = "input.webapp_extend[type='submit']"
 LOGOUT_BUTTON_SELECTOR = "button.logout_link[type='submit']"
 EXPIRY_DATE_TAG_SELECTOR = 'p.webapp_expiry > strong'
-DOMAIN_LOCATOR = 'h3 > a.domain_name_link'
+LOGIN_ERROR_ID = 'id_login_error'
 
 TIMEOUT = 10000  # milliseconds
 
@@ -77,15 +77,23 @@ def log_in(page: Page, url: str, username: str, password: str) -> tuple[bool, st
     success, msg = navigate_to_page(page, url)
     if not success:
         return success, f"Unable to load {url}: {msg}"
-    # Enter username and password then click 'Log in'
+    # Enter username and password
+    page.type(f"#{USERNAME_ID}", username, delay=random.uniform(50, 100))
+    page.type(f"#{PASSWORD_ID}", password, delay=random.uniform(50, 100))
+    # Click 'Log in'
     try:
-        page.type(f"#{USERNAME_ID}", username, delay=random.uniform(50, 100))
-        page.type(f"#{PASSWORD_ID}", password, delay=random.uniform(50, 100))
-        page.click(f"#{LOGIN_BUTTON_ID}")
+        with page.expect_navigation():
+            page.click(f"#{LOGIN_BUTTON_ID}")
     except TimeoutError:
         return False, f"Timed out logging in after {TIMEOUT/1000:g} s."
-    except Exception as e:
-        return False, f"Unable to log in: {e}"
+    # Check if there is any error message
+    err_locator = page.locator(f"#{LOGIN_ERROR_ID}")
+    if err_locator.is_visible():
+        return False, f"Unable to log in: {err_locator.inner_text()}"
+    # Check the logout button
+    logout_locator = page.locator(LOGOUT_BUTTON_SELECTOR)  # may find multiple matches
+    if logout_locator.count() == 0:
+        return False, f"Your credentials are correct but can't find the '{LOGOUT_BUTTON_SELECTOR}' button."
     return True, "Logged in."
 
 
@@ -108,7 +116,7 @@ def get_expiry_date(page: Page, url: str) -> tuple[bool, str, Locator | None]:
     if date_locator.is_visible():
         return True, f"Initial expiry date: {date_locator.inner_text()}", date_locator
     else:
-        return False, "'Expiry date not found.", None
+        return False, "Expiry date not found.", None
 
 
 def extend_expiry_date(page: Page, date_locator: Locator) -> tuple[bool, str, str]:

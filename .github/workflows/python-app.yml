@@ -41,11 +41,11 @@ jobs:
         python3 --version
         python3 -m pip install --upgrade pip
         python3 -m pip install --user flake8 pytest
-        if [ -f requirements.txt ]; then python3 -m pip install --user -r requirements.txt; fi
+        python3 -m pip install --user -r requirements.txt
 
     - name: Ensure browsers are installed
       run: |
-        python3 -m playwright install --with-deps
+        playwright install --with-deps chromium
 
     - name: Lint with flake8
       run: |
