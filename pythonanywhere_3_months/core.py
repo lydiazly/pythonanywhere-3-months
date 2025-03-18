@@ -125,7 +125,7 @@ def extend_expiry_date(page: Page, date_locator: Locator) -> tuple[bool, str, st
     """
     btn_locator = page.locator(RUN_BUTTON_SELECTOR)
     if not (btn_locator.is_visible() and btn_locator.is_enabled()):
-        return False, "'Button not found or disabled.", ''
+        return False, "Button not found or disabled.", ''
 
     # The page will reload once the button is clicked
     try:
