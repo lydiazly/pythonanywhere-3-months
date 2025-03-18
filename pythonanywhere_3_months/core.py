@@ -122,7 +122,7 @@ def get_expiry_date(driver: webdriver.Chrome, url: str) -> tuple[bool, str, WebE
             EC.presence_of_element_located((By.CSS_SELECTOR, RUN_BUTTON_SELECTOR))
         )
     except TimeoutException:
-        return False, f"'Button not found. Timed out after {TIMEOUT} s.", None
+        return False, f"Button not found. Timed out after {TIMEOUT} s.", None
     else:
         element = driver.find_element(By.CSS_SELECTOR, EXPIRY_DATE_TAG_SELECTOR)
         date = element.text
