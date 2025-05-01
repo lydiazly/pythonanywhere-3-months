@@ -1,6 +1,8 @@
 # pythonanywhere-3-months
 
-> This is a **Playwright** version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) but introduced a debug option and scheduled workflows. This README is updated.
+> This is a **Playwright** version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) and introduced a debug option and workflows. This README is updated.
+
+---
 
 Logs into your [PythonAnywhere](https://www.pythonanywhere.com/) account and clicks the 'Run until 3 months from today' button, so your website doesn't deactivate automatically.
 
