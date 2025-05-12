@@ -16,6 +16,7 @@ from . import (
     last_run_at_absolute_path,
     login_page,
 )
+from .browsers import check_and_install_chromium
 
 
 # Global variables so someone can monkey patch
@@ -148,14 +149,14 @@ def get_options() -> tuple[bool, logging.Logger]:
         description="Clicks the 'Run until 3 months from today' on PythonAnywhere."
     )
     parser.add_argument(
-        "-H", "--hidden", help="Hide the browser.", action="store_true"
+        "-H", "--headless", help="Run in headless mode.", action="store_true"
     )
     parser.add_argument(
         "-d", "--debug", help="Prints debug logs.", action="store_true"
     )
     args = parser.parse_args()
     logger = setup_logger('' if args.debug else __name__)
-    return args.hidden, logger
+    return args.headless, logger
 
 
 def get_credentials(filepath: str) -> tuple[str, str]:
@@ -183,23 +184,31 @@ def get_credentials(filepath: str) -> tuple[str, str]:
 # Encapsulate main functionality, can import any use in code instead
 # of running from cmdline
 def run(
-    username: str, password: str, use_hidden: bool = False,
+    username: str, password: str, headless: bool = False,
     logger: logging.Logger = logging.getLogger(),
-) -> None:
+) -> bool:
+    if not check_and_install_chromium(logger):
+        return False
+
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=use_hidden)
+        browser = p.chromium.launch(
+            headless=headless,
+            channel="chromium",  # new headless instead of chrome-headless-shell
+        )
         context = browser.new_context()  # incognito
         page = context.new_page()
         context.set_default_timeout(TIMEOUT)
+        is_logged_in = False
+
         try:
             # Login ---------------------------------------------------|
             success, msg = log_in(page, login_page, username, password)
             if success:
                 logger.info(msg)
+                is_logged_in = True
             else:
                 logger.error(msg)
-                close_everything(browser, context)
-                return
+                return False
 
             # Go to "Web" page ----------------------------------------|
             success, msg, date_locator = get_expiry_date(page, page.url + "/webapps")
@@ -207,9 +216,7 @@ def run(
                 logger.info(msg)
             else:
                 logger.error(msg)
-                logger.info(log_out(page))
-                close_everything(browser, context)
-                return
+                return False
 
             # Click 'Run until 3 months from today' -------------------|
             success, msg, extra_info = extend_expiry_date(page, date_locator)
@@ -219,20 +226,23 @@ def run(
                 logger.warning(msg)
             else:
                 logger.error(msg)
-                logger.info(log_out(page))
-                close_everything(browser, context)
-                return
+                return False
             logger.info(extra_info)
 
             # Save current time to 'last run time file', so we can check if we need to run this again
             with open(last_run_at_absolute_path, "w") as f:
                 f.write(str(time()))
 
-            # Log out -------------------------------------------------|
-            logger.info(log_out(page))
-
-            print("Done!", file=sys.stderr)
         except Exception:
             traceback.print_exc()
+            return False
+
+        else:
+            return True
+
         finally:
+            # Log out
+            if is_logged_in:
+                logger.info(log_out(page))
+            # Close
             close_everything(browser, context)

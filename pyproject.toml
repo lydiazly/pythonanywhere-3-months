@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pythonanywhere-3-months"
+version = "0.2.1"
+authors = [
+    {name = "lydiazly"},
+]
+description = "A Playwright version of pythonanywhere-3-months."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+license = {text = "Unlicense"}
+dependencies = [
+    "PyYaml>=6.0.0",
+    "playwright>=1.50.0",
+    "pytest-playwright>=0.7.0",
+]
+
+[project.scripts]
+pythonanywhere_3_months = "pythonanywhere_3_months.__main__:main"
+scpythonanywhere_check_sinceript2 = "pythonanywhere_3_months.last_run:check"
+
+[tool.setuptools]
+packages = ["pythonanywhere_3_months"]
+include-package-data = true
+zip-safe = true

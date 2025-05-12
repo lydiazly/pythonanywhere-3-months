@@ -1,6 +1,13 @@
 # pythonanywhere-3-months
 
-> This is a **Playwright** version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) and introduced a debug option and workflows. This README is updated.
+[![Run](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml/badge.svg?branch=master)](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml)
+
+> This is a **Playwright** version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) and introduced a debug option and scheduled workflows. This README is updated.
+
+> A **GitHub Actions** [workflow](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml) is triggered on every push and scheduled to run every two months.
+
+> Set your **PythonAnywhere**'s credentials:
+> Go to `Settings > Secrets and variables > Actions`. Add repository secrets `USERNAME` and `PASSWORD`.
 
 ---
 
@@ -15,9 +22,7 @@ Linux: `~/. cache/ms-playwright`
 
 ```sh
 python3 -m pip install git+https://github.com/lydiazly/pythonanywhere-3-months
-# Install the default browsers: Chromium, WebKit, and Firefox
-playwright install
-# Run
+# Run (chromium will be installed automatically by playwright)
 pythonanywhere_3_months -H
 ```
 

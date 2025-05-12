@@ -1,7 +1,7 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# This workflow will install Python dependencies, run tests and lint, and run a script with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Run pythonanywhere_3_months
+name: Run
 
 on:
   # 1:00 AM UTC, every two months
@@ -42,11 +42,6 @@ jobs:
         python3 --version
         python3 -m pip install --upgrade pip
         python3 -m pip install --user flake8 pytest
-        python3 -m pip install --user -r requirements.txt
-
-    - name: Install chromium
-      run: |
-        playwright install --with-deps chromium
 
     - name: Lint with flake8
       run: |
@@ -57,7 +52,7 @@ jobs:
 
     - name: Install pythonanywhere_3_months
       run: |
-        python3 -m pip install --user ./
+        python3 -m pip install --user .
 
     - name: Run pythonanywhere_3_months
       run: |
