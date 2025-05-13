@@ -1,32 +1,55 @@
 #!/usr/local/env python3
+import argparse
 import logging
 import os
 import subprocess
 import sys
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import Playwright, Browser
 
 
-def check_and_install_chromium(logger: logging.Logger = logging.getLogger()) -> bool:
-    """Checks and installs Chromium."""
+def get_browser(
+        p: Playwright,
+        args: argparse.Namespace,
+        logger: logging.Logger = logging.getLogger(),
+) -> Browser | None:
+    """Checks/Installs and returns a browser.
+
+    If in headless mode without setting `--headless-shell`, use the
+    new chromium headless mode instead of a separate chromium headless shell.
+    See: <https://playwright.dev/python/docs/browsers#chromium-new-headless-mode>
+    """
+    kwargs = {"headless": not args.headed}
+    if args.browser == "chromium" and not args.headed and not args.shell:
+        kwargs["channel"] = "chromium"
+    logger.debug(f"Options: {kwargs}")
+
     env = os.environ.copy()  # including PLAYWRIGHT_BROWSERS_PATH
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, channel="chromium")
-            browser.close()
-            return True
+        browser = getattr(p, args.browser).launch(**kwargs)
+        # browser = p.chromium.launch(**kwargs)
+        return browser
+
     except Exception:
         logger.info("Installing Chromium...")
+        cmd = [sys.executable, "-m", "playwright", "install", "--with-deps"]
+        # For chromium headless shell / chromium new headless mode
+        if args.browser == "chromium" and not args.headed:
+            if args.shell:
+                cmd.append("--only-shell")
+            else:
+                cmd.append("--no-shell")
+        cmd.append(args.browser)
         # Install
         try:
-            subprocess.run(
-                [sys.executable, "-m",
-                 "playwright", "install", "--with-deps", "--no-shell", "chromium"],
-                text=True,
-                check=True,
-                env=env
-            )
-            logger.info("Chromium installed.")
-            return True
+            subprocess.run(cmd, text=True, check=True, env=env)
+            logger.info(f"{args.browser} installed.")
         except subprocess.CalledProcessError as e:
-            logger.error(f"Installation failed: {e}\n{e.stderr}")
-            return False
+            logger.error(f"Failed to install {args.browser}: {e}\n{e.stderr}")
+            return None
+
+        try:
+            browser = getattr(p, args.browser).launch(**kwargs)
+            return browser
+        except Exception as e:
+            logger.error(f"Failed to launch browser: {e}")
+            return None

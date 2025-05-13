@@ -42,7 +42,10 @@ jobs:
         python3 --version
         python3 -m pip install --upgrade pip
         python3 -m pip install --user -r requirements.txt
-        python3 -m playwright install --with-deps --no-shell chromium
+
+    - name: Install chromium headless shell
+      run: |
+        python3 -m playwright install --with-deps --only-shell chromium
 
     - name: Lint with flake8
       run: |
@@ -61,4 +64,4 @@ jobs:
         export XDG_DATA_HOME=$HOME
         echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
         echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-        pythonanywhere_3_months -H
+        pythonanywhere_3_months --headless-shell

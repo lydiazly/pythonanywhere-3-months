@@ -1,13 +1,14 @@
 import sys
 from . import credential_file_name
-from .core import get_options, get_credentials, run
+from .helpers import get_options, get_credentials
+from .core import run
 
 
 def main():
     """Gets options, runs program, cleans up selenium on exception."""
-    headless, logger = get_options()
-    username_or_email_address, password = get_credentials(credential_file_name)
-    success = run(username_or_email_address, password, headless, logger)
+    args, logger = get_options()
+    credentials = get_credentials(credential_file_name, logger)
+    success = run(credentials, args, logger)
     if success:
         print("Done!", file=sys.stderr)
     else:

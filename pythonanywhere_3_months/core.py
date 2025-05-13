@@ -1,22 +1,15 @@
 #!/usr/local/env python3
 """Use Playwright to log in and click the button."""
-import os
-import sys
 import traceback
 import logging
 import argparse
 from time import time
-from pathlib import Path
 import random
 
-import yaml
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page, Locator, TimeoutError
 
-from . import (
-    last_run_at_absolute_path,
-    login_page,
-)
-from .browsers import check_and_install_chromium
+from . import last_run_at_absolute_path, login_page
+from .browsers import get_browser
 
 
 # Global variables so someone can monkey patch
@@ -29,36 +22,17 @@ LOGOUT_BUTTON_SELECTOR = "button.logout_link[type='submit']"
 EXPIRY_DATE_TAG_SELECTOR = 'p.webapp_expiry > strong'
 LOGIN_ERROR_ID = 'id_login_error'
 
-TIMEOUT = 10000  # milliseconds
+TIMEOUT = 30000  # milliseconds
 
 
-def setup_logger(name: str = '') -> logging.Logger:
-    """Sets and returns the logger."""
-    if name:
-        # Level=INFO, use a local logger with a name
-        logger = logging.getLogger(name)
-        logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler(stream=sys.stderr)
-        handler.setLevel(logging.INFO)
-        formatter = logging.Formatter('[%(levelname)s] %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.propagate = False
-        # Suppress urllib3 warnings
-        logging.getLogger("urllib3").setLevel(logging.ERROR)
-    else:
-        # Level=DEBUG, use the root logger
-        logging.basicConfig(
-            level=logging.DEBUG, format="%(asctime)s %(levelno)s - %(message)s"
-        )
-        logger = logging.getLogger()
-    return logger
-
-
-def close_everything(browser: Browser, context: BrowserContext) -> None:
+def close_everything(browser: Browser, context: BrowserContext) -> str:
     """Gracefully close everything."""
-    context.close()
-    browser.close()
+    try:
+        context.close()
+        browser.close()
+        return "Closed gracefully."
+    except Exception:
+        return ''
 
 
 def navigate_to_page(page: Page, url: str) -> tuple[bool, str]:
@@ -73,14 +47,16 @@ def navigate_to_page(page: Page, url: str) -> tuple[bool, str]:
         return True, ''
 
 
-def log_in(page: Page, url: str, username: str, password: str) -> tuple[bool, str]:
+def log_in(page: Page, url: str, credentials: dict) -> tuple[bool, str]:
     """Logs in and returns a tuple of status and message."""
     success, msg = navigate_to_page(page, url)
     if not success:
-        return success, f"Unable to load {url}: {msg}"
+        return False, f"Unable to load {url}: {msg}"
+    if not credentials:
+        return False, "Unable to get PythonAnywhere credentials."
     # Enter username and password
-    page.type(f"#{USERNAME_ID}", username, delay=random.uniform(50, 100))
-    page.type(f"#{PASSWORD_ID}", password, delay=random.uniform(50, 100))
+    page.type(f"#{USERNAME_ID}", credentials["username"], delay=random.uniform(50, 100))
+    page.type(f"#{PASSWORD_ID}", credentials["password"], delay=random.uniform(50, 100))
     # Click 'Log in'
     try:
         with page.expect_navigation():
@@ -94,7 +70,7 @@ def log_in(page: Page, url: str, username: str, password: str) -> tuple[bool, st
     # Check the logout button
     logout_locator = page.locator(LOGOUT_BUTTON_SELECTOR)  # may find multiple matches
     if logout_locator.count() == 0:
-        return False, f"Your credentials are correct but can't find the '{LOGOUT_BUTTON_SELECTOR}' button."
+        return False, f"Credentials are correct but couldn't find the '{LOGOUT_BUTTON_SELECTOR}' button."
     return True, "Logged in."
 
 
@@ -143,66 +119,30 @@ def extend_expiry_date(page: Page, date_locator: Locator) -> tuple[bool, str, st
         return success, msg, f"Current expiry date: {date}"
 
 
-def get_options() -> tuple[bool, logging.Logger]:
-    """Gets options from user and sets the logger."""
-    parser = argparse.ArgumentParser(
-        description="Clicks the 'Run until 3 months from today' on PythonAnywhere."
-    )
-    parser.add_argument(
-        "-H", "--headless", help="Run in headless mode.", action="store_true"
-    )
-    parser.add_argument(
-        "-d", "--debug", help="Prints debug logs.", action="store_true"
-    )
-    args = parser.parse_args()
-    logger = setup_logger('' if args.debug else __name__)
-    return args.headless, logger
-
-
-def get_credentials(filepath: str) -> tuple[str, str]:
-    """Gets pythonanywhere credentials from the file.
-    If the file does not exist, prompt the user for input and save to this path.
-    """
-    absolute_path = os.path.abspath(os.path.join(Path.home(), filepath))
-    if os.path.exists(absolute_path):
-        logging.debug("Credential file location: {}".format(absolute_path))
-        with open(absolute_path, "r") as cred:
-            creds = yaml.load(cred, Loader=yaml.FullLoader)
-    else:
-        # Prompt the user
-        from getpass import getpass
-        print("Please enter your username and password.")
-        username = input("Username: ")
-        password = getpass("Password: ")
-        with open(absolute_path, "w") as cred:
-            yaml.dump({"username": username, "password": password}, cred)
-        logging.debug("Saved credential: {}".format(absolute_path))
-        return username, password
-    return creds["username"], creds["password"]
-
-
 # Encapsulate main functionality, can import any use in code instead
 # of running from cmdline
 def run(
-    username: str, password: str, headless: bool = False,
+    credentials: dict,
+    args: argparse.Namespace,
     logger: logging.Logger = logging.getLogger(),
 ) -> bool:
-    if not check_and_install_chromium(logger):
-        return False
-
     with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=headless,
-            channel="chromium",  # new headless instead of chrome-headless-shell
-        )
+        browser = get_browser(p, args, logger)
+        if browser is None:
+            return False
+
         context = browser.new_context()  # incognito
         page = context.new_page()
         context.set_default_timeout(TIMEOUT)
         is_logged_in = False
 
         try:
+            if args.test:
+                logger.info("*** Test only (no operation) ***")
+                return True
+
             # Login ---------------------------------------------------|
-            success, msg = log_in(page, login_page, username, password)
+            success, msg = log_in(page, login_page, credentials)
             if success:
                 logger.info(msg)
                 is_logged_in = True
@@ -245,4 +185,4 @@ def run(
             if is_logged_in:
                 logger.info(log_out(page))
             # Close
-            close_everything(browser, context)
+            logger.info(close_everything(browser, context))
