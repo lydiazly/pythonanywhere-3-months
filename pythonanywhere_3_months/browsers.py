@@ -43,8 +43,11 @@ def get_browser(
         try:
             subprocess.run(cmd, text=True, check=True, env=env)
             logger.info(f"{args.browser} installed.")
+        except KeyboardInterrupt:
+            logger.error("Interrupted by user.")
+            return None
         except subprocess.CalledProcessError as e:
-            logger.error(f"Failed to install {args.browser}: {e}\n{e.stderr}")
+            logger.error(f"Failed to install browser: {args.browser}. Error: {e}")
             return None
 
         try:
