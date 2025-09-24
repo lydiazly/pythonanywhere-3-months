@@ -27,7 +27,7 @@ dependencies = [
 
 [project.scripts]
 pythonanywhere_3_months = "pythonanywhere_3_months.__main__:main"
-scpythonanywhere_check_sinceript2 = "pythonanywhere_3_months.last_run:check"
+pythonanywhere_check_since = "pythonanywhere_3_months.last_run:check"
 
 [tool.setuptools]
 packages = ["pythonanywhere_3_months"]
