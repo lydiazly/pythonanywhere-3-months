@@ -5,7 +5,7 @@ from .core import run
 
 
 def main():
-    """Gets options, runs program, cleans up selenium on exception."""
+    """Gets options, runs program, cleans up on exception."""
     args, logger = get_options()
     credentials = get_credentials(credential_file_name, logger)
     success = run(credentials, args, logger)
