@@ -64,8 +64,8 @@ options:
   -h, --help            show this help message and exit
   -H, --headed          run in headed mode (default: headless)
   -d, --debug           print debug logs
-  -b <browser>, --browser <browser>
-                        choose a browser: chromium, firefox, webkit (default: chromium)
+  -b str, --browser str
+                        specify a browser. Choices: chromium, firefox, webkit (default: chromium)
   --headless-shell      use a separate headless shell for chromium headless mode
   --test                test the browser without any page operation
 ```

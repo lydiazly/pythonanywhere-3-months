@@ -1,4 +1,4 @@
-#!/usr/local/env python3
+# -*- coding: utf-8 -*-
 """Use Playwright to log in and click the button."""
 import traceback
 import logging

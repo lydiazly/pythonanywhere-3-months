@@ -1,4 +1,4 @@
-#!/usr/local/env python3
+# -*- coding: utf-8 -*-
 import argparse
 import logging
 import sys
@@ -35,17 +35,21 @@ def get_options() -> tuple[argparse.Namespace, logging.Logger]:
         description="Clicks the 'Run until 3 months from today' on PythonAnywhere."
     )
     parser.add_argument(
-        "-H", "--headed", action="store_true", help="run in headed mode (default: headless)"
+        "-H", "--headed",
+        action="store_true",
+        help="run in headed mode (default: headless)"
     )
     parser.add_argument(
-        "-d", "--debug", action="store_true", help="print debug logs"
+        "-d", "--debug",
+        action="store_true",
+        help="print debug logs"
     )
     parser.add_argument(
         "-b", "--browser",
+        metavar="str",
         choices=browser_choices,
         default="chromium",
-        metavar="<browser>",
-        help=f"choose a browser: {', '.join(browser_choices)} (default: %(default)s)"
+        help="specify a browser. Choices: %(choices)s (default: %(default)s)"
     )
     parser.add_argument(
         "--headless-shell",
