@@ -1,9 +1,9 @@
 [build-system]
-requires = ["setuptools>=65", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
 
 [project]
-name = "pythonanywhere-3-months"
+name = "pythonanywhere-3-months-pw"
 version = "0.2.1"
 authors = [
     {name = "lydiazly"},
@@ -17,11 +17,11 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
-license = {text = "Unlicense"}
+license = "Unlicense"
 dependencies = [
     "PyYaml>=6.0.0",
-    "playwright>=1.50.0",
     "pytest-playwright>=0.7.0",
 ]
 
@@ -29,7 +29,5 @@ dependencies = [
 pythonanywhere_3_months = "pythonanywhere_3_months.__main__:main"
 pythonanywhere_check_since = "pythonanywhere_3_months.last_run:check"
 
-[tool.setuptools]
+[tool.hatch.build.targets.wheel]
 packages = ["pythonanywhere_3_months"]
-include-package-data = true
-zip-safe = true

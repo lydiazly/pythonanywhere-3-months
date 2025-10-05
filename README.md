@@ -1,14 +1,19 @@
-# pythonanywhere-3-months
+# pythonanywhere-3-months-pw
 
 [![Run](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml/badge.svg?branch=master)](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml)
+[![python](https://img.shields.io/badge/Python-3.10--3.12-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![playwright](https://img.shields.io/badge/Playwright->=0.7.0-44BA4C)](https://playwright.dev/python)
+[![playwright](https://img.shields.io/badge/Playwright->=0.7.0-44BA4C)](https://playwright.dev/python)
 
-> This is a **Playwright** version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) and introduced a debug option and scheduled workflows. This README is updated.
-
+> **Note:**
+> This is a [Playwright](https://playwright.dev/python) version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) and introduced a debug option and scheduled workflows. Some functions work differently due to the Playwright migration. The usage in this README is updated.
+>
 > A GitHub Actions [workflow](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml) is triggered on every push and scheduled to run every two months.
 > Set your PythonAnywhere's credentials:
 > Go to `Settings > Secrets and variables > Actions`. Add repository secrets `USERNAME` and `PASSWORD`.
-
+>
 > Other changes made by [lydiazly](https://github.com/lydiazly):
+>
 > - Now requires Python >= 3.10. Haven't tested in lower versions. No `chromedriver` needed. Playwright will install browsers at:
 >   - Windows: `%USERPROFILE%\AppData\Local\ms-playwright`
 >   - macOS: `~/Library/Caches/ms-playwright`
@@ -23,13 +28,19 @@
 
 Logs into your [PythonAnywhere](https://www.pythonanywhere.com/) account and clicks the `Run until 3 months from today` button, so your website doesn't deactivate automatically.
 
-
-### Install and Run:
+## Install and Run:
 
 Install:
 
 ```sh
 python3 -m pip install git+https://github.com/lydiazly/pythonanywhere-3-months
+# Will install pythonanywhere-3-months-pw
+```
+
+Uninstall:
+
+```sh
+python3 -m pip uninstall pythonanywhere-3-months-pw
 ```
 
 Put PythonAnywhere credentials at `$XDG_DATA_HOME/pythonanywhere_credentials.yaml` (`~/.local/share/pythonanywhere_credentials.yaml`) with contents like:
