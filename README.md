@@ -9,7 +9,7 @@
 > This is a [Playwright](https://playwright.dev/python) version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) and introduced a debug option and scheduled workflows. Some functions work differently due to the Playwright migration. The usage in this README is updated.
 >
 > A GitHub Actions [workflow](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml) is triggered on every push and scheduled to run every two months.
-> Set your PythonAnywhere's credentials:
+> Set your **PythonAnywhere**'s credentials:
 > Go to `Settings > Secrets and variables > Actions`. Add repository secrets `USERNAME` and `PASSWORD`.
 >
 > Other changes made by [lydiazly](https://github.com/lydiazly):
@@ -28,7 +28,7 @@
 
 Logs into your [PythonAnywhere](https://www.pythonanywhere.com/) account and clicks the `Run until 3 months from today` button, so your website doesn't deactivate automatically.
 
-## Install and Run:
+## Install and Run
 
 Install:
 
