@@ -3,7 +3,6 @@
 [![Run](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml/badge.svg?branch=master)](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml)
 [![python](https://img.shields.io/badge/Python-3.10--3.12-3776AB?logo=python&logoColor=white)](https://www.python.org)
 [![playwright](https://img.shields.io/badge/Playwright->=0.7.0-44BA4C)](https://playwright.dev/python)
-[![playwright](https://img.shields.io/badge/Playwright->=0.7.0-44BA4C)](https://playwright.dev/python)
 
 > **Note:**
 > This is a [Playwright](https://playwright.dev/python) version of [1337-server/pythonanywhere-3-months](https://github.com/1337-server/pythonanywhere-3-months), which was originally forked from [purarue/pythonanywhere-3-months](https://github.com/purarue/pythonanywhere-3-months) and introduced a debug option and scheduled workflows. Some functions work differently due to the Playwright migration. The usage in this README is updated.
