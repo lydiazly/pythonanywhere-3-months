@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # tests/test_browser.py
-# pytest tests/test_browser.py --browser-channel chromium
 import logging
+import platform
 
 from pythonanywhere_3_months.config import Config
 from pythonanywhere_3_months import run
@@ -10,13 +10,14 @@ from pythonanywhere_3_months.core import TEST_MSG, CLOSED_MSG
 
 def test_chromium(caplog):
     """Tests launching chromium (new headless mode)."""
+    headless_shell = platform.system() == 'Linux'
     config = Config(
         peek_only=False,
         debug=False,
         test=True,
         headed_mode=False,
         browser_name='chromium',
-        headless_shell=False,
+        headless_shell=headless_shell,
     )
     credentials = {}  # dummy
 
