@@ -100,7 +100,7 @@ def get_args_and_logger() -> tuple[Namespace, logging.Logger]:
 
 def get_credentials(
     credentials_path: Path,
-    logger: logging.Logger,
+    logger: logging.Logger = logging.getLogger(),
 ) -> dict[str, str]:
     """Reads PythonAnywhere credentials from a file.
 

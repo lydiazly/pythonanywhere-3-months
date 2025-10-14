@@ -36,3 +36,7 @@ pythonanywhere_check_since = "pythonanywhere_3_months.last_run:check"
 
 [tool.hatch.build.targets.wheel]
 packages = ["pythonanywhere_3_months"]
+
+[tool.pytest.ini_options]
+addopts = "--browser-channel chromium"
+testpaths = ["tests"]

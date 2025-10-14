@@ -21,10 +21,18 @@ from pythonanywhere_3_months.config import (
     TIMEOUT,
 )
 from pythonanywhere_3_months.browsers import get_browser
-from pythonanywhere_3_months.selectors import LoginIds, Selectors
+from pythonanywhere_3_months.selectors import Selectors
 
 
 TIMEOUT_ERR_TEMPLATE = "Timeout %s after %gs."
+INITIAL_DATE_TEMPLATE = "Initial expiry date: %s"
+CURRENT_DATE_TEMPLATE = "Current expiry date: %s"
+EXTENDED_MSG = "Expiry date extended successfully."
+TEST_MSG = "*** Test only (no operation) ***"
+PEEK_MSG = "*** Peek only (no clicking) ***"
+LOGGED_IN_MSG = "Logged in."
+LOGGED_OUT_MSG = "Logged out."
+CLOSED_MSG = "Browser closed."
 
 
 def print_error(
@@ -51,7 +59,7 @@ def close_everything(
     """Gracefully closes everything."""
     context.close()
     browser.close()
-    logger.info("Browser closed.")
+    logger.info(CLOSED_MSG)
 
 
 def navigate_to_page(page: Page, url: str) -> None:
@@ -75,12 +83,12 @@ def log_in(
 
     # Enter username and password
     page.type(
-        f"#{LoginIds.USERNAME}",
+        Selectors.USERNAME,
         credentials["username"],
         delay=random.uniform(50, 100),
     )
     page.type(
-        f"#{LoginIds.PASSWORD}",
+        Selectors.PASSWORD,
         credentials["password"],
         delay=random.uniform(50, 100),
     )
@@ -88,14 +96,14 @@ def log_in(
     # Click 'Log in'
     try:
         with page.expect_navigation():
-            page.click(f"#{LoginIds.LOGIN_BUTTON}")
+            page.click(Selectors.LOGIN_BUTTON)
     except TimeoutError:
         raise TimeoutError(
             TIMEOUT_ERR_TEMPLATE % ("logging in", TIMEOUT / 1000)
         )
 
     # Check if there is any error messages
-    err_locator = page.locator(f"#{LoginIds.LOGIN_ERROR}")
+    err_locator = page.locator(Selectors.LOGIN_ERROR)
     if err_locator.is_visible():
         raise RuntimeError(f"Unable to log in: {err_locator.inner_text()}")
 
@@ -108,7 +116,7 @@ def log_in(
             "Maybe logged in but couldn't find the logout button."
         )
 
-    logger.info("Logged in.")
+    logger.info(LOGGED_IN_MSG)
 
 
 def log_out(page: Page, is_logged_in: bool, logger: Logger) -> None:
@@ -119,7 +127,7 @@ def log_out(page: Page, is_logged_in: bool, logger: Logger) -> None:
         except Exception as e:
             logger.error(f"Error logging out:\n{type(e).__name__}: {e}")
         else:
-            logger.info("Logged out.")
+            logger.info(LOGGED_OUT_MSG)
 
 
 def extend_expiry_date(
@@ -139,11 +147,11 @@ def extend_expiry_date(
         )
 
     if peek_only:
-        logger.info("*** Peek only (no clicking) ***")
-        logger.info(f"Current expiry date: {date_locator.inner_text()}")
+        logger.info(PEEK_MSG)
+        logger.info(CURRENT_DATE_TEMPLATE % date_locator.inner_text())
         return
     else:
-        logger.info(f"Initial expiry date: {date_locator.inner_text()}")
+        logger.info(INITIAL_DATE_TEMPLATE % date_locator.inner_text())
 
     btn_locator = page.locator(Selectors.RUN_BUTTON)
     if not (btn_locator.is_visible() and btn_locator.is_enabled()):
@@ -158,10 +166,10 @@ def extend_expiry_date(
             TIMEOUT_ERR_TEMPLATE % ("reloading the page", TIMEOUT / 1000)
         )
     else:
-        logger.info("Expiry date extended successfully.")
+        logger.info(EXTENDED_MSG)
     finally:
         date = date_locator.inner_text()
-        logger.info(f"Current expiry date: {date}")
+        logger.info(CURRENT_DATE_TEMPLATE % date)
 
 
 def run(
@@ -187,7 +195,7 @@ def run(
         try:
             if config.test:
                 # Test and exit
-                logger.info("*** Test only (no operation) ***")
+                logger.info(TEST_MSG)
                 return
 
             # Go to the landing page and log in -----------------------|
