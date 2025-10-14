@@ -1,18 +1,11 @@
-import os
-from pathlib import Path
+# __init__.py
+"""A Playwright version of pythonanywhere-3-months.
+Logs into your PythonAnywhere account and extend the expiry date.
+"""
 
-local_directory: str = os.environ.get(
-    "XDG_DATA_HOME", os.path.join(Path.home(), ".local/share")
-)
-os.makedirs(local_directory, exist_ok=True)
+__all__ = ['run', 'check']
+__version__ = '0.2.1'
+__author__ = 'Lydia Zhang'
 
-credential_file_name: str = os.path.join(
-    local_directory, "pythonanywhere_credentials.yaml"
-)
-last_run_at_file_name: str = os.path.join(local_directory, "pythonanywhere_lastrun.txt")
-last_run_at_absolute_path: str = os.path.abspath(
-    os.path.join(Path.home(), last_run_at_file_name)
-)
-login_page: str = "https://www.pythonanywhere.com/login/"
-
-browser_choices = ["chromium", "firefox", "webkit"]
+from pythonanywhere_3_months.core import run
+from pythonanywhere_3_months.last_run import check

@@ -6,28 +6,33 @@ build-backend = "hatchling.build"
 name = "pythonanywhere-3-months-pw"
 version = "0.2.1"
 authors = [
-    {name = "lydiazly"},
+    { name = "Lydia Zhang" },
 ]
-description = "A Playwright version of pythonanywhere-3-months."
+description = "A Playwright version of pythonanywhere-3-months - extend the expiry date of your webapp."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
 ]
-license = "Unlicense"
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
 dependencies = [
     "PyYaml>=6.0.0",
     "pytest-playwright>=0.7.0",
 ]
 
 [project.scripts]
-pythonanywhere_3_months = "pythonanywhere_3_months.__main__:main"
+pythonanywhere_3_months = "pythonanywhere_3_months.cli:main"
 pythonanywhere_check_since = "pythonanywhere_3_months.last_run:check"
+
+[project.urls]
+"Homepage" = "https://github.com/lydiazly/pythonanywhere-3-months"
+"Bug Tracker" = "https://github.com/lydiazly/pythonanywhere-3-months/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["pythonanywhere_3_months"]

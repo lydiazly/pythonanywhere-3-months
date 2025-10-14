@@ -1,188 +1,235 @@
 # -*- coding: utf-8 -*-
-"""Use Playwright to log in and click the button."""
-import traceback
-import logging
-import argparse
-from time import time
+# core.py
+"""Main functions to log in and click the button."""
+from logging import Logger, getLogger
+from playwright.sync_api import (
+    sync_playwright,
+    Browser,
+    BrowserContext,
+    Page,
+    TimeoutError,
+)
 import random
+from time import time
+import traceback
 
-from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page, Locator, TimeoutError
-
-from . import last_run_at_absolute_path, login_page
-from .browsers import get_browser
-
-
-# Global variables so someone can monkey patch
-# if they want to -- in case this breaks
-USERNAME_ID = "id_auth-username"
-PASSWORD_ID = "id_auth-password"
-LOGIN_BUTTON_ID = "id_next"
-RUN_BUTTON_SELECTOR = "input.webapp_extend[type='submit']"
-LOGOUT_BUTTON_SELECTOR = "button.logout_link[type='submit']"
-EXPIRY_DATE_TAG_SELECTOR = 'p.webapp_expiry > strong'
-LOGIN_ERROR_ID = 'id_login_error'
-
-TIMEOUT = 30000  # milliseconds
+from pythonanywhere_3_months.config import (
+    Config,
+    LAST_RUN_AT_ABSOLUTE_PATH,
+    LOGIN_PAGE_URL,
+    TARGET_URL_SUBDIR,
+    TIMEOUT,
+)
+from pythonanywhere_3_months.browsers import get_browser
+from pythonanywhere_3_months.selectors import LoginIds, Selectors
 
 
-def close_everything(browser: Browser, context: BrowserContext) -> str:
-    """Gracefully close everything."""
-    try:
-        context.close()
-        browser.close()
-        return "Closed gracefully."
-    except Exception:
-        return ''
+TIMEOUT_ERR_TEMPLATE = "Timeout %s after %gs."
 
 
-def navigate_to_page(page: Page, url: str) -> tuple[bool, str]:
-    """Navigate to the page and returns a tuple of status and message."""
+def print_error(
+    exc: Exception | BaseException, logger: Logger, max_level: int = 5
+) -> None:
+    """Prints error messages and causes."""
+    current_exc = exc
+    level = 1
+    while current_exc is not None and level <= max_level:
+        logger.error(f"{'  └─ ' if level > 1 else ''}{current_exc}")
+        if current_exc.__cause__ is not None:
+            current_exc = current_exc.__cause__
+            level += 1
+        elif current_exc.__context__ is not None:
+            current_exc = current_exc.__context__
+            level += 1
+        else:
+            return
+
+
+def close_everything(
+    browser: Browser, context: BrowserContext, logger: Logger
+) -> None:
+    """Gracefully closes everything."""
+    context.close()
+    browser.close()
+    logger.info("Browser closed.")
+
+
+def navigate_to_page(page: Page, url: str) -> None:
+    """Navigates to the page."""
     try:
         page.goto(url)
+        page.wait_for_load_state("networkidle")
     except TimeoutError:
-        return False, f"Timed out after {TIMEOUT/1000:g} s."
+        raise TimeoutError(
+            TIMEOUT_ERR_TEMPLATE % (f"loading {url}", TIMEOUT / 1000)
+        )
     except Exception as e:
-        return False, e
-    else:
-        return True, ''
+        raise RuntimeError(f"Unable to load {url}.") from e
 
 
-def log_in(page: Page, url: str, credentials: dict) -> tuple[bool, str]:
-    """Logs in and returns a tuple of status and message."""
-    success, msg = navigate_to_page(page, url)
-    if not success:
-        return False, f"Unable to load {url}: {msg}"
-    if not credentials:
-        return False, "Unable to get PythonAnywhere credentials."
+def log_in(
+    page: Page, url: str, credentials: dict[str, str], logger: Logger
+) -> None:
+    """Navigates to the landing page and logs in."""
+    navigate_to_page(page, url)
+
     # Enter username and password
-    page.type(f"#{USERNAME_ID}", credentials["username"], delay=random.uniform(50, 100))
-    page.type(f"#{PASSWORD_ID}", credentials["password"], delay=random.uniform(50, 100))
+    page.type(
+        f"#{LoginIds.USERNAME}",
+        credentials["username"],
+        delay=random.uniform(50, 100),
+    )
+    page.type(
+        f"#{LoginIds.PASSWORD}",
+        credentials["password"],
+        delay=random.uniform(50, 100),
+    )
+
     # Click 'Log in'
     try:
         with page.expect_navigation():
-            page.click(f"#{LOGIN_BUTTON_ID}")
+            page.click(f"#{LoginIds.LOGIN_BUTTON}")
     except TimeoutError:
-        return False, f"Timed out logging in after {TIMEOUT/1000:g} s."
-    # Check if there is any error message
-    err_locator = page.locator(f"#{LOGIN_ERROR_ID}")
+        raise TimeoutError(
+            TIMEOUT_ERR_TEMPLATE % ("logging in", TIMEOUT / 1000)
+        )
+
+    # Check if there is any error messages
+    err_locator = page.locator(f"#{LoginIds.LOGIN_ERROR}")
     if err_locator.is_visible():
-        return False, f"Unable to log in: {err_locator.inner_text()}"
+        raise RuntimeError(f"Unable to log in: {err_locator.inner_text()}")
+
     # Check the logout button
-    logout_locator = page.locator(LOGOUT_BUTTON_SELECTOR)  # may find multiple matches
+    logout_locator = page.locator(
+        Selectors.LOGOUT_BUTTON
+    )  # may find multiple matches
     if logout_locator.count() == 0:
-        return False, f"Credentials are correct but couldn't find the '{LOGOUT_BUTTON_SELECTOR}' button."
-    return True, "Logged in."
+        raise RuntimeError(
+            "Maybe logged in but couldn't find the logout button."
+        )
+
+    logger.info("Logged in.")
 
 
-def log_out(page: Page) -> str:
-    """Logs out or returns an empty string."""
-    try:
-        page.click(LOGOUT_BUTTON_SELECTOR)
-        return "Logged out."
-    except Exception:
-        return ''
+def log_out(page: Page, is_logged_in: bool, logger: Logger) -> None:
+    """Logs out."""
+    if is_logged_in:
+        try:
+            page.click(Selectors.LOGOUT_BUTTON)
+        except Exception as e:
+            logger.error(f"Error logging out:\n{type(e).__name__}: {e}")
+        else:
+            logger.info("Logged out.")
 
 
-def get_expiry_date(page: Page, url: str) -> tuple[bool, str, Locator | None]:
-    """Navigates to the 'Web' page and finds the button and the expiry date locator."""
-    success, msg = navigate_to_page(page, url)
-    if not success:
-        return success, f"Unable to load {url}: {msg}", None
-
-    date_locator = page.locator(EXPIRY_DATE_TAG_SELECTOR)
-    if date_locator.is_visible():
-        return True, f"Initial expiry date: {date_locator.inner_text()}", date_locator
-    else:
-        return False, "Expiry date not found.", None
-
-
-def extend_expiry_date(page: Page, date_locator: Locator) -> tuple[bool, str, str]:
-    """Clicks the 'Run until 3 months from today' button and
-    returns a tuple of status, message, and extra information.
+def extend_expiry_date(
+    page: Page, url: str, logger: Logger, peek_only: bool = False
+) -> None:
+    """Navigates to the page, finds the the expiry date, then clicks the
+    `Run until 3 months from today` button.
     """
-    btn_locator = page.locator(RUN_BUTTON_SELECTOR)
+    navigate_to_page(page, url)
+
+    date_locator = page.locator(Selectors.EXPIRY_DATE_TAG)
+    try:
+        date_locator.wait_for(state="visible", timeout=TIMEOUT)
+    except TimeoutError:
+        raise TimeoutError(
+            TIMEOUT_ERR_TEMPLATE % ('looking for expiry date', TIMEOUT / 1000)
+        )
+
+    if peek_only:
+        logger.info("*** Peek only (no clicking) ***")
+        logger.info(f"Current expiry date: {date_locator.inner_text()}")
+        return
+    else:
+        logger.info(f"Initial expiry date: {date_locator.inner_text()}")
+
+    btn_locator = page.locator(Selectors.RUN_BUTTON)
     if not (btn_locator.is_visible() and btn_locator.is_enabled()):
-        return False, "Button not found or disabled.", ''
+        raise RuntimeError("Extend button not found or disabled.")
 
     # The page will reload once the button is clicked
     try:
         with page.expect_navigation():
             btn_locator.click()
     except TimeoutError:
-        success = False  # It might be fine, just give a warning later
-        msg = f"Timed out reloading the page after {TIMEOUT} s."
+        raise TimeoutError(
+            TIMEOUT_ERR_TEMPLATE % ("reloading the page", TIMEOUT / 1000)
+        )
     else:
-        success = True
-        msg = "Expiry date extended successfully."
+        logger.info("Expiry date extended successfully.")
     finally:
         date = date_locator.inner_text()
-        return success, msg, f"Current expiry date: {date}"
+        logger.info(f"Current expiry date: {date}")
 
 
-# Encapsulate main functionality, can import any use in code instead
-# of running from cmdline
 def run(
-    credentials: dict,
-    args: argparse.Namespace,
-    logger: logging.Logger = logging.getLogger(),
-) -> bool:
+    credentials: dict[str, str],
+    config: Config,
+    logger: Logger = getLogger(),
+) -> None:
+    """Main function to run the application."""
     with sync_playwright() as p:
-        browser = get_browser(p, args, logger)
+        browser = get_browser(p, config, logger)
         if browser is None:
-            return False
+            logger.error(
+                f"{config.browser_name} not launched: unknown error occurred."
+            )
+            raise RuntimeError
 
         context = browser.new_context()  # incognito
         page = context.new_page()
         context.set_default_timeout(TIMEOUT)
         is_logged_in = False
 
+        # Do everything in the block for cleanup on exit
         try:
-            if args.test:
+            if config.test:
+                # Test and exit
                 logger.info("*** Test only (no operation) ***")
-                return True
+                return
 
-            # Login ---------------------------------------------------|
-            success, msg = log_in(page, login_page, credentials)
-            if success:
-                logger.info(msg)
-                is_logged_in = True
-            else:
-                logger.error(msg)
-                return False
+            # Go to the landing page and log in -----------------------|
+            log_in(page, LOGIN_PAGE_URL, credentials, logger)
+            is_logged_in = True
 
-            # Go to "Web" page ----------------------------------------|
-            success, msg, date_locator = get_expiry_date(page, page.url + "/webapps")
-            if success:
-                logger.info(msg)
-            else:
-                logger.error(msg)
-                return False
+            # Go from 'Dashboard' to 'Web' tab ------------------------|
+            # Click 'Run until 3 months from today'
+            extend_expiry_date(
+                page,
+                f"{page.url.rstrip('/')}/{TARGET_URL_SUBDIR}",
+                logger,
+                config.peek_only,
+            )
 
-            # Click 'Run until 3 months from today' -------------------|
-            success, msg, extra_info = extend_expiry_date(page, date_locator)
-            if success:
-                logger.info(msg)
-            elif extra_info:
-                logger.warning(msg)
-            else:
-                logger.error(msg)
-                return False
-            logger.info(extra_info)
-
-            # Save current time to 'last run time file', so we can check if we need to run this again
-            with open(last_run_at_absolute_path, "w") as f:
+            # Save current time to a file
+            with open(LAST_RUN_AT_ABSOLUTE_PATH, "w") as f:
                 f.write(str(time()))
 
-        except Exception:
-            traceback.print_exc()
-            return False
+        except TimeoutError as e:
+            print_error(e, logger, max_level=2)
+            raise
+
+        # Chained exceptions are handled here
+        except RuntimeError as e:
+            print_error(e, logger)
+            raise
+
+        # Other unexpected exceptions
+        except Exception as e:
+            if config.debug:
+                traceback.print_exc()
+            else:
+                print_error(e, logger)
+            raise
 
         else:
-            return True
+            logger.info("Done!")
 
+        # Cleanup
         finally:
             # Log out
-            if is_logged_in:
-                logger.info(log_out(page))
+            log_out(page, is_logged_in, logger)
             # Close
-            logger.info(close_everything(browser, context))
+            close_everything(browser, context, logger)

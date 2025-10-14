@@ -1,6 +1,6 @@
 # pythonanywhere-3-months-pw
 
-[![Run](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml/badge.svg?branch=master)](https://github.com/lydiazly/pythonanywhere-3-months/actions/workflows/run-task.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![python](https://img.shields.io/badge/Python-3.10--3.12-3776AB?logo=python&logoColor=white)](https://www.python.org)
 [![playwright](https://img.shields.io/badge/Playwright->=0.7.0-44BA4C)](https://playwright.dev/python)
 
@@ -33,10 +33,10 @@ Install:
 
 ```sh
 python3 -m pip install git+https://github.com/lydiazly/pythonanywhere-3-months
-# Will install pythonanywhere-3-months-pw
+# Installs: pythonanywhere-3-months-pw
 ```
 
-Uninstall:
+To uninstall:
 
 ```sh
 python3 -m pip uninstall pythonanywhere-3-months-pw
@@ -66,18 +66,21 @@ pythonanywhere_3_months -h
 ```
 
 ```text
-usage: pythonanywhere_3_months [-h] [-H] [-d] [-b <browser>] [--headless-shell] [--test]
+usage: pythonanywhere_3_months [-h] [options]
 
-Clicks the 'Run until 3 months from today' on PythonAnywhere.
+Extends the expiry date of your webapp on PythonAnywhere.
 
 options:
   -h, --help            show this help message and exit
-  -H, --headed          run in headed mode (default: headless)
-  -d, --debug           print debug logs
+  -H, --headed          Run in headed mode (default: headless)
   -b str, --browser str
-                        specify a browser. Choices: chromium, firefox, webkit (default: chromium)
-  --headless-shell      use a separate headless shell for chromium headless mode
-  --test                test the browser without any page operation
+                        Select a browser from: chromium, firefox, webkit (default: chromium)
+  --headless-shell      Use a separate headless shell for chromium headless mode
+                        (https://playwright.dev/python/docs/browsers#chromium-headless-shell)
+  --peek                Find the expiry date and exit without clicking the extend button
+                        (default: false)
+  --debug               Set the logging level to DEBUG (default to false or from $DEBUG_MODE)
+  --test                Exit after opening a page without any further operation (default: false)
 ```
 
 ---
