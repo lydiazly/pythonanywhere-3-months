@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # tests/test_login.py
-# pytest tests/test_login.py --browser-channel chromium -s
+# pytest tests/test_login.py -s
 import logging
+import platform
 
 from pythonanywhere_3_months.config import Config, CREDENTIAL_ABSOLUTE_PATH
 from pythonanywhere_3_months.startup import get_credentials
@@ -17,13 +18,14 @@ from pythonanywhere_3_months.core import (
 
 def test_login(caplog):
     """Tests logging in (chromium new headless mode)."""
+    headless_shell = platform.system() == 'Linux'
     config = Config(
         peek_only=True,
         debug=False,
         test=False,
         headed_mode=False,
         browser_name='chromium',
-        headless_shell=False,
+        headless_shell=headless_shell,
     )
     credentials = get_credentials(CREDENTIAL_ABSOLUTE_PATH)
     # Check credentials
