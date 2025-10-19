@@ -44,7 +44,7 @@ BROWSER_CHOICES = ['chromium', 'firefox', 'webkit']
 class Config(NamedTuple):
     """Application configuration.
 
-    Args:
+    Attributes:
         peek_only (bool): Find the expiry date without clicking the button
         debug (bool): Set the logging level to DEBUG
         test (bool): Exit after opening a page without any further operation
