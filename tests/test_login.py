@@ -8,11 +8,10 @@ from pythonanywhere_3_months.config import Config, CREDENTIAL_ABSOLUTE_PATH
 from pythonanywhere_3_months.startup import get_credentials
 from pythonanywhere_3_months import run
 from pythonanywhere_3_months.core import (
+    PageManager,
     CURRENT_DATE_TEMPLATE,
     PEEK_MSG,
-    LOGGED_IN_MSG,
-    LOGGED_OUT_MSG,
-    CLOSED_MSG,
+    BROWSER_CLOSED_MSG,
 )
 
 
@@ -42,9 +41,9 @@ def test_login(caplog):
         assert res is None
         # Check the log records more specifically
         assert len(caplog.records) >= 5
-        assert caplog.records[0].message == LOGGED_IN_MSG
+        assert caplog.records[0].message == PageManager.LOGGED_IN_MSG
         assert caplog.records[1].message == PEEK_MSG
         assert CURRENT_DATE_TEMPLATE % '' in caplog.records[2].message
-        assert caplog.records[-2].message == LOGGED_OUT_MSG
-        assert caplog.records[-1].message == CLOSED_MSG
+        assert caplog.records[3].message == PageManager.LOGGED_OUT_MSG
+        assert caplog.records[-1].message == BROWSER_CLOSED_MSG
         print("\n" + caplog.records[2].message)

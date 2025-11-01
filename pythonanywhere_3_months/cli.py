@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # cli.py
 """CLI interface and main entry point."""
+import os
 import sys
 
 from pythonanywhere_3_months.config import (
@@ -31,6 +32,6 @@ def main() -> None:
         run(credentials, config, logger)
     except KeyboardInterrupt:
         print("\nInterrupted by user.", file=sys.stderr)
-        sys.exit(130)
+        os._exit(130)
     except Exception:
         sys.exit(1)

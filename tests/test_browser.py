@@ -5,7 +5,7 @@ import platform
 
 from pythonanywhere_3_months.config import Config
 from pythonanywhere_3_months import run
-from pythonanywhere_3_months.core import TEST_MSG, CLOSED_MSG
+from pythonanywhere_3_months.core import TEST_MSG, BROWSER_CLOSED_MSG
 
 
 def test_chromium(caplog):
@@ -28,4 +28,4 @@ def test_chromium(caplog):
         # Check the log records more specifically
         assert len(caplog.records) == 2
         assert caplog.records[0].message == TEST_MSG
-        assert caplog.records[-1].message == CLOSED_MSG
+        assert caplog.records[-1].message == BROWSER_CLOSED_MSG

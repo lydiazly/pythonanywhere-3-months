@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # startup.py
 """Logger setter and CLI argument parsers."""
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 import logging
 from pathlib import Path
 import sys
@@ -12,6 +12,29 @@ from pythonanywhere_3_months.config import BROWSER_CHOICES
 
 # ---------------------------------------------------------------------|
 # Logging
+class DebugLogFormatter(logging.Formatter):
+    """Debug level logging formatter."""
+
+    FMT = "[%(asctime)s %(levelno)s] %(message)s"
+    FMT_ERR = (
+        "[%(asctime)s %(levelno)s] (%(levelname)s) %(message)s "
+        "(%(filename)s:%(lineno)d)"
+    )
+    FORMATTERS = {
+        logging.DEBUG: logging.Formatter(FMT),
+        logging.INFO: logging.Formatter(FMT),
+        logging.WARNING: logging.Formatter(FMT_ERR),
+        logging.ERROR: logging.Formatter(FMT_ERR),
+        logging.CRITICAL: logging.Formatter(FMT_ERR),
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        formatter = self.FORMATTERS.get(
+            record.levelno, logging.Formatter(self.FMT)
+        )
+        return formatter.format(record)
+
+
 def setup_logger(name: str = '') -> logging.Logger:
     """Sets and returns a logger."""
     if name:
@@ -28,9 +51,13 @@ def setup_logger(name: str = '') -> logging.Logger:
         logging.getLogger('urllib3').setLevel(logging.ERROR)
     else:
         # Level: DEBUG, use the root logger
+        # Create handler with custom formatter
+        handler = logging.StreamHandler(stream=sys.stderr)
+        handler.setFormatter(DebugLogFormatter())
         logging.basicConfig(
             level=logging.DEBUG,
-            format="%(asctime)s %(levelno)s - %(message)s",
+            # format="%(asctime)s %(levelno)s - %(message)s",
+            handlers=[handler],
         )
         logger = logging.getLogger()
     return logger
@@ -41,7 +68,9 @@ def setup_logger(name: str = '') -> logging.Logger:
 def get_args_and_logger() -> tuple[Namespace, logging.Logger]:
     """Gets CLI arguments and sets the logger."""
     parser = ArgumentParser(
-        description="Extends the expiry date of your webapp on PythonAnywhere."
+        usage="%(prog)s [-h] [options]",
+        description="Extends the expiry date of your webapp on PythonAnywhere.",
+        formatter_class=RawTextHelpFormatter,
     )
     parser.add_argument(
         '-H',
@@ -62,7 +91,7 @@ def get_args_and_logger() -> tuple[Namespace, logging.Logger]:
         dest='shell',
         action='store_true',
         help=(
-            "Use a separate headless shell for chromium headless mode "
+            "Use a separate headless shell for chromium headless mode\n"
             "(https://playwright.dev/python/docs/browsers#chromium-headless-shell)"
         ),
     )
@@ -93,7 +122,7 @@ def get_args_and_logger() -> tuple[Namespace, logging.Logger]:
     args = parser.parse_args()
 
     logger = setup_logger('' if args.debug else __name__)
-    logger.debug(f"Arguments: {args}")
+    logger.debug(f"Args:\n{vars(args)}")
 
     return args, logger
 
@@ -141,7 +170,8 @@ def get_credentials(
         if not file_exists:
             credentials_path.parent.mkdir(parents=True, exist_ok=True)
             credentials_path.write_text(
-                yaml.dump(credentials, indent=2, sort_keys=False), encoding="utf-8"
+                yaml.dump(credentials, indent=2, sort_keys=False),
+                encoding="utf-8",
             )
             logger.info(f"Saved credentials: {str(credentials_path)}")
         return credentials
