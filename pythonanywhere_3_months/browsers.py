@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # browsers.py
 """Installs and launches browsers."""
+
 from logging import Logger, getLogger
 import os
 from playwright.sync_api import Playwright, Browser
@@ -92,8 +93,7 @@ def get_browser(
             browser = getattr(p, config.browser_name).launch(**kwargs)
         except Exception as e:
             logger.error(
-                f"{config.browser_name} not launched:\n"
-                f"{type(e).__name__}: {e}"
+                f"{config.browser_name} not launched:\n{type(e).__name__}: {e}"
             )
             raise RuntimeError
         else:

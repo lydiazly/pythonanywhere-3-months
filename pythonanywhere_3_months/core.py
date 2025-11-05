@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # core.py
 """Main functions to log in and click the button."""
+
 from logging import Logger, getLogger
 from playwright.sync_api import (
     sync_playwright,

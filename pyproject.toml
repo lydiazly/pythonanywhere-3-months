@@ -5,12 +5,10 @@ build-backend = "hatchling.build"
 [project]
 name = "pythonanywhere-3-months-pw"
 version = "0.3.1"
-authors = [
-    { name = "Lydia Zhang" },
-]
+authors = [{ name = "Lydia Zhang" }]
 description = "A Playwright version of pythonanywhere-3-months - extend the expiry date of your webapp."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
@@ -24,6 +22,16 @@ license-files = ["LICEN[CS]E*"]
 dependencies = [
     "PyYaml>=6.0.0",
     "pytest-playwright>=0.7.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy",
+    "ruff",
+    "types-PyYAML",
+]
+test = [
+    "pytest",
 ]
 
 [project.scripts]
@@ -40,3 +48,10 @@ packages = ["pythonanywhere_3_months"]
 [tool.pytest.ini_options]
 addopts = "--browser-channel chromium"
 testpaths = ["tests"]
+
+[tool.ruff]
+include = ["*.py"]
+line-length = 79
+
+[tool.ruff.format]
+quote-style = "preserve"

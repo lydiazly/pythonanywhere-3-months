@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # startup.py
 """Logger setter and CLI argument parsers."""
+
 from argparse import ArgumentParser, Namespace, RawTextHelpFormatter
 import logging
 from pathlib import Path

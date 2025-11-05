@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # config.py
 """Configuration and constants."""
+
 from argparse import Namespace
 import os
 from pathlib import Path
