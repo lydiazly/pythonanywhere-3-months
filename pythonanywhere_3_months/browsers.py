@@ -2,19 +2,18 @@
 # browsers.py
 """Installs and launches browsers."""
 
-from logging import Logger, getLogger
+from logging import Logger
 import os
 from playwright.sync_api import Playwright, Browser
 import subprocess
 import sys
 
 from pythonanywhere_3_months.config import Config
+from pythonanywhere_3_months.startup import default_logger
 
 
 def get_browser(
-    p: Playwright,
-    config: Config,
-    logger: Logger = getLogger(),
+    p: Playwright, config: Config, logger: Logger = default_logger
 ) -> Browser | None:
     """Installs and returns a Browser object.
 
@@ -40,64 +39,62 @@ def get_browser(
     try:
         browser = getattr(p, config.browser_name).launch(**kwargs)
         # browser = p.chromium.launch(**kwargs)
+    except Exception:
+        pass
+    else:
+        return browser
 
     # If browser not found, install
-    except Exception:
-        deps_cmd = [sys.executable, '-m', 'playwright', 'install-deps']
-        cmd = [sys.executable, '-m', 'playwright', 'install']
-        # For chromium (headless)
-        if config.browser_name == 'chromium' and not config.headed_mode:
-            # Only use a separate chromium headless shell
-            # https://playwright.dev/python/docs/browsers#chromium-headless-shell
-            if config.headless_shell:
-                deps_cmd.append('chromium-headless-shell')
-                cmd.append('--only-shell')
-            # Use the new headless mode of real chrome,
-            # skipping installing a separate headless shell
-            # https://playwright.dev/python/docs/browsers#chromium-new-headless-mode
-            else:
-                deps_cmd.append('chromium')
-                cmd.append('--no-shell')
-        cmd.append(config.browser_name)
+    deps_cmd = [sys.executable, '-m', 'playwright', 'install-deps']
+    cmd = [sys.executable, '-m', 'playwright', 'install']
+    # For chromium (headless)
+    if config.browser_name == 'chromium' and not config.headed_mode:
+        # Only use a separate chromium headless shell
+        # https://playwright.dev/python/docs/browsers#chromium-headless-shell
+        if config.headless_shell:
+            deps_cmd.append('chromium-headless-shell')
+            cmd.append('--only-shell')
+        # Use the new headless mode of real chrome,
+        # skipping installing a separate headless shell
+        # https://playwright.dev/python/docs/browsers#chromium-new-headless-mode
+        else:
+            deps_cmd.append('chromium')
+            cmd.append('--no-shell')
+    cmd.append(config.browser_name)
 
-        # Install system dependencies
-        logger.info(
-            f"Installing system dependencies for {config.browser_name}..."
+    # Install system dependencies
+    logger.info(f"Installing system dependencies for {config.browser_name}...")
+    try:
+        subprocess.run(deps_cmd, text=True, check=True, env=env)
+    except subprocess.CalledProcessError as e:
+        logger.error(
+            f"Unable to install dependencies for {config.browser_name}:"
+            f" {e}\n"
+            "    Install manually via the following command "
+            "(will ask for sudo permissions):\n\n"
+            f"\t{' '.join(['python3'] + deps_cmd[1:])}\n"
         )
-        try:
-            subprocess.run(deps_cmd, text=True, check=True, env=env)
-        except subprocess.CalledProcessError as e:
-            logger.error(
-                f"Unable to install dependencies for {config.browser_name}:"
-                f" {e}\n"
-                "    Install manually via the following command "
-                "(will ask for sudo permissions):\n\n"
-                f"\t{' '.join(['python3'] + deps_cmd[1:])}\n"
-            )
-            raise RuntimeError
-        else:
-            logger.info("System dependencies installed.")
+        raise RuntimeError from e
+    else:
+        logger.info("System dependencies installed.")
 
-        # Install browser
-        logger.info(f"Installing {config.browser_name}...")
-        try:
-            subprocess.run(cmd, text=True, check=True, env=env)
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Error installing '{config.browser_name}': {e}")
-            raise RuntimeError
-        else:
-            logger.info(f"{config.browser_name} installed.")
+    # Install browser
+    logger.info(f"Installing {config.browser_name}...")
+    try:
+        subprocess.run(cmd, text=True, check=True, env=env)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error installing '{config.browser_name}': {e}")
+        raise RuntimeError from e
+    else:
+        logger.info(f"{config.browser_name} installed.")
 
-        # Launch
-        try:
-            browser = getattr(p, config.browser_name).launch(**kwargs)
-        except Exception as e:
-            logger.error(
-                f"{config.browser_name} not launched:\n{type(e).__name__}: {e}"
-            )
-            raise RuntimeError
-        else:
-            return browser
-
+    # Launch
+    try:
+        browser = getattr(p, config.browser_name).launch(**kwargs)
+    except Exception as e:
+        logger.error(
+            f"{config.browser_name} not launched:\n{type(e).__name__}: {e}"
+        )
+        raise RuntimeError from e
     else:
         return browser

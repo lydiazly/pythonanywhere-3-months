@@ -2,7 +2,7 @@
 # core.py
 """Main functions to log in and click the button."""
 
-from logging import Logger, getLogger
+from logging import Logger
 from playwright.sync_api import (
     sync_playwright,
     Browser,
@@ -23,6 +23,7 @@ from pythonanywhere_3_months.config import (
     TARGET_URL_SUBDIR,
     TIMEOUT,
 )
+from pythonanywhere_3_months.startup import default_logger
 from pythonanywhere_3_months.browsers import get_browser
 from pythonanywhere_3_months.selectors import Selectors
 
@@ -47,7 +48,7 @@ class PageManager:
         home_url: str,
         url_sub_dir: str,
         config: Config,
-        logger: Logger = getLogger(),
+        logger: Logger = default_logger,
     ) -> None:
         self.browser: Browser = browser
         self.credentials: dict[str, str] = credentials
@@ -117,7 +118,7 @@ class PageManager:
         except TimeoutError:
             raise TimeoutError(
                 TIMEOUT_ERR_TEMPLATE % (f"loading {url}", TIMEOUT / 1000)
-            )
+            ) from None
         except Exception as e:
             raise RuntimeError(f"Unable to load {url}.") from e
 
@@ -150,7 +151,7 @@ class PageManager:
         except TimeoutError:
             raise TimeoutError(
                 TIMEOUT_ERR_TEMPLATE % ("logging in", TIMEOUT / 1000)
-            )
+            ) from None
 
         # Check if there is any error messages
         err_locator = self.page.locator(Selectors.LOGIN_ERROR).describe(
@@ -206,7 +207,7 @@ class PageManager:
             raise TimeoutError(
                 TIMEOUT_ERR_TEMPLATE
                 % ('looking for expiry date', TIMEOUT / 1000)
-            )
+            ) from None
 
         if self.config.peek_only:
             self.logger.info(PEEK_MSG)
@@ -226,7 +227,7 @@ class PageManager:
         except TimeoutError:
             raise TimeoutError(
                 TIMEOUT_ERR_TEMPLATE % ("reloading the page", TIMEOUT / 1000)
-            )
+            ) from None
         else:
             self.logger.info(EXTENDED_MSG)
         finally:
@@ -237,7 +238,7 @@ class PageManager:
 def run(
     credentials: dict[str, str],
     config: Config,
-    logger: Logger = getLogger(),
+    logger: Logger = default_logger,
 ) -> None:
     """Main function to run the application."""
     with sync_playwright() as p:

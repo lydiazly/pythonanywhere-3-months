@@ -13,6 +13,9 @@ from pythonanywhere_3_months.config import BROWSER_CHOICES
 
 # ---------------------------------------------------------------------|
 # Logging
+default_logger: logging.Logger = logging.getLogger()
+
+
 class DebugLogFormatter(logging.Formatter):
     """Debug level logging formatter."""
 
@@ -60,7 +63,7 @@ def setup_logger(name: str = '') -> logging.Logger:
             # format="%(asctime)s %(levelno)s - %(message)s",
             handlers=[handler],
         )
-        logger = logging.getLogger()
+        logger = default_logger
     return logger
 
 
@@ -130,7 +133,7 @@ def get_args_and_logger() -> tuple[Namespace, logging.Logger]:
 
 def get_credentials(
     credentials_path: Path,
-    logger: logging.Logger = logging.getLogger(),
+    logger: logging.Logger = default_logger,
 ) -> dict[str, str]:
     """Reads PythonAnywhere credentials from a file.
 

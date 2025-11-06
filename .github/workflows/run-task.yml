@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   run-task:
+
     runs-on: ubuntu-latest
 
     steps:
@@ -31,10 +32,10 @@ jobs:
           sudo apt-get update
 
       - name: Checkout repository
-        uses: actions/checkout@v4  # default: fetch-depth=1
+        uses: actions/checkout@v5  # default: fetch-depth=1
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - name: Install the latest version of uv and set the python version
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.12"
 
@@ -42,31 +43,23 @@ jobs:
         run: |
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
+      - name: Install the project
         run: |
-          python3 --version
-          python3 -m pip install --no-cache-dir --upgrade --user pip
-          python3 -m pip install --no-cache-dir --user -r requirements.txt
+          uv sync --locked --no-dev --no-editable
 
       - name: Install chromium headless shell
         run: |
           python3 -m playwright install --with-deps --only-shell chromium
 
-      - name: Lint with flake8
-        run: |
-          python3 -m pip install --no-cache-dir --user flake8 pytest
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-      - name: Install pythonanywhere_3_months
-        run: |
-          python3 -m pip install --no-cache-dir --user .
-
-      - name: Run pythonanywhere_3_months
+      - name: Run script
+        shell: bash
         run: |
           export XDG_DATA_HOME=$HOME
-          echo "username: ${{ secrets.USERNAME }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-          echo "password: ${{ secrets.PASSWORD }}" >> "$XDG_DATA_HOME/pythonanywhere_credentials.yaml"
-          pythonanywhere_3_months --headless-shell
+          CREDS_PATH="${XDG_DATA_HOME}/pythonanywhere_credentials.yaml"
+          echo "username: ${{ secrets.USERNAME }}" >> "${CREDS_PATH}"
+          echo "password: ${{ secrets.PASSWORD }}" >> "${CREDS_PATH}"
+          uv run pythonanywhere_3_months --headless-shell
+
+      - name: Cleanup credential file
+        if: always()
+        run: rm -f "$HOME/pythonanywhere_credentials.yaml"
