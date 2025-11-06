@@ -1,5 +1,5 @@
-# This workflow will install Python dependencies, run tests and lint,
-# and run a script with a single version of Python
+# This workflow will install Python dependencies using uv
+# and run a script with a specified version of Python
 # For more information, see:
 # https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
@@ -49,7 +49,7 @@ jobs:
 
       - name: Install chromium headless shell
         run: |
-          python3 -m playwright install --with-deps --only-shell chromium
+          uv run playwright install --with-deps --only-shell chromium
 
       - name: Run script
         shell: bash
