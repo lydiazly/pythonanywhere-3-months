@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pythonanywhere-3-months-pw"
-version = "0.3.1"
+version = "0.3.2"
 authors = [{ name = "Lydia Zhang" }]
 description = "A Playwright version of pythonanywhere-3-months - extend the expiry date of your webapp."
 readme = "README.md"

@@ -4,7 +4,7 @@ Logs into your PythonAnywhere account and extend the expiry date.
 """
 
 __all__ = ['run', 'check']
-__version__ = '0.3.1'
+__version__ = '0.3.2'
 __author__ = 'Lydia Zhang'
 
 from pythonanywhere_3_months.core import run
