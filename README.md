@@ -1,7 +1,8 @@
 # pythonanywhere-3-months-pw
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![python](https://img.shields.io/badge/Python-3.10--3.12-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![python](https://img.shields.io/badge/Python-3.11|3.12-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![uv](https://img.shields.io/badge/uv-0.9.7-DE5FE9?logo=uv&logoColor=white)](https://www.python.org)
 [![playwright](https://img.shields.io/badge/Playwright->=0.7.0-44BA4C)](https://playwright.dev/python)
 
 > **Note:**
@@ -29,17 +30,20 @@ Logs into your [PythonAnywhere](https://www.pythonanywhere.com/) account and cli
 
 ## Install and Run
 
-Install:
+**Install:**
 
 ```sh
-python3 -m pip install git+https://github.com/lydiazly/pythonanywhere-3-months
-# Installs: pythonanywhere-3-months-pw
+uv pip install git+https://github.com/lydiazly/pythonanywhere-3-months
+# Or
+python -m pip install git+https://github.com/lydiazly/pythonanywhere-3-months
 ```
 
-To uninstall:
+**Uninstall:**
 
 ```sh
-python3 -m pip uninstall pythonanywhere-3-months-pw
+uv pip uninstall pythonanywhere-3-months-pw
+# Or
+python -m pip uninstall pythonanywhere-3-months-pw
 ```
 
 Put PythonAnywhere credentials at `$XDG_DATA_HOME/pythonanywhere_credentials.yaml` (`~/.local/share/pythonanywhere_credentials.yaml`) with contents like:
@@ -49,7 +53,7 @@ username: your_username
 password: your_password
 ```
 
-Run:
+Run (use `uv run` if installed by uv):
 
 ```sh
 pythonanywhere_3_months
